@@ -1,0 +1,493 @@
+openapi: 3.0.0
+info:
+  title: PC Builder Expert System API
+  description: Prolog-based expert system for building compatible PC configurations
+  version: 1.0.0
+  contact:
+    name: Expert System Support
+    url: http://localhost:8080
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+tags:
+  - name: Build
+    description: PC build recommendations
+  - name: Components
+    description: Component database queries
+  - name: Explanation
+    description: Reasoning explanations
+  - name: Meta
+    description: Trace and confidence endpoints for debugging
+
+paths:
+  /api/build:
+    post:
+      tags:
+        - Build
+      summary: Generate PC build recommendation
+      description: |
+        Generates a complete PC build based on user preferences using Prolog inference engine.
+        Returns a full build with CPU, motherboard, RAM, GPU, storage, PSU, and case.
+      operationId: buildPCRecommendation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - budget
+                - usage
+              properties:
+                budget:
+                  type: string
+                  enum: [budget, mid_range, high_end, enthusiast]
+                  description: Budget tier for the build
+                  example: mid_range
+                usage:
+                  type: string
+                  enum: [gaming, content_creation, office, programming]
+                  description: Primary use case
+                  example: gaming
+                gamingLevel:
+                  type: string
+                  enum: [1080p, 1440p, 4k]
+                  description: Gaming performance target (required if usage is gaming)
+                  example: 1440p
+                cpuPreference:
+                  type: string
+                  enum: [intel, amd, none]
+                  description: CPU brand preference (send as `cpuPreference` in camelCase)
+                  example: intel
+                rgbImportance:
+                  type: string
+                  enum: [very_important, nice_to_have, dont_care]
+                  description: RGB lighting preference for components (send as `rgbImportance` in camelCase)
+                  example: nice_to_have
+                  default: dont_care
+                coolingPreference:
+                  type: string
+                  enum: [aio, air, either]
+                  description: Cooling type preference - AIO (liquid) or air cooling (send as `coolingPreference` in camelCase)
+                  example: aio
+                  default: either
+      responses:
+        '200':
+          description: Build successfully generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildRecommendation'
+        '400':
+          description: Invalid input or no compatible build found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: string
+                  trace:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TraceEntry'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /api/alternatives:
+    get:
+      tags:
+        - Components
+      summary: Get alternative candidates for a component
+      description: |
+        Returns alternative candidates for the specified component parameter.
+        The server expects a `component` query parameter (cpu, gpu, motherboard, ram, storage, psu, case)
+        and will return previously scored candidate alternatives (from the last recommendation run).
+      operationId: getAlternatives
+      parameters:
+        - name: component
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [cpu, gpu, motherboard, ram, storage, psu, case]
+          description: Component to retrieve alternatives for
+          example: cpu
+      responses:
+        '200':
+          description: Alternatives found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlternativesResponse'
+        '400':
+          description: Missing or invalid component parameter
+
+  /api/components:
+    get:
+      tags:
+        - Components
+      summary: Get all available components
+      description: Returns complete component database (CPUs, motherboards, GPUs)
+      operationId: getAllComponents
+      responses:
+        '200':
+          description: Component list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cpus:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CPUComponent'
+                  motherboards:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MotherboardComponent'
+                  gpus:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GPUComponent'
+
+  /api/explain:
+    post:
+      tags:
+        - Explanation
+      summary: Get reasoning explanation for component selection
+      description: Returns Prolog rule-based explanation for why a component was selected. Optional `type` can be `detailed`, `why`, or `how`.
+      operationId: getExplanation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - component
+              properties:
+                component:
+                  type: string
+                  enum: [cpu, motherboard, ram, gpu, psu, storage, case]
+                  example: cpu
+                type:
+                  type: string
+                  enum: [detailed, why, how]
+                  description: Explanation style (defaults to `detailed`)
+                  example: detailed
+      responses:
+        '200':
+          description: Explanation generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  explanation:
+                    type: string
+                    example: CPU selected based on usage (gaming) requiring 6+ cores and mid_range budget tier
+
+  /api/trace:
+    get:
+      tags:
+        - Meta
+      summary: Get the reasoning trace
+      description: Returns the internal reasoning trace collected during recommendation and inference.
+      operationId: getTrace
+      responses:
+        '200':
+          description: Trace output
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trace:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TraceEntry'
+
+  /api/confidence:
+    get:
+      tags:
+        - Meta
+      summary: Get confidence factors for components
+      description: >-
+        Returns the calculated confidence factors for each recommended component.
+        These "confidence" values represent an estimated build quality / suitability
+        score for the component (how well it fits the user's requirements and
+        expected performance), not a probabilistic guarantee.
+      operationId: getConfidence
+      responses:
+        '200':
+          description: Confidence values
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  confidences:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConfidenceEntry'
+
+
+components:
+  schemas:
+    BuildRecommendation:
+      type: object
+      properties:
+        cpu:
+          type: object
+          properties:
+            name:
+              type: string
+            brand:
+              type: string
+            socket:
+              type: string
+            price:
+              type: number
+            cores:
+              type: integer
+            threads:
+              type: integer
+        motherboard:
+          type: object
+          properties:
+            name:
+              type: string
+            socket:
+              type: string
+            chipset:
+              type: string
+            price:
+              type: number
+            ramType:
+              type: string
+        ram:
+          type: object
+          properties:
+            name:
+              type: string
+            capacity:
+              type: integer
+              description: Capacity in GB
+            type:
+              type: string
+            speed:
+              type: integer
+              description: Speed in MHz
+            price:
+              type: number
+            hasRGB:
+              type: string
+              enum: [yes, no]
+              description: Whether the RAM has RGB lighting
+        gpu:
+          type: object
+          properties:
+            name:
+              type: string
+            brand:
+              type: string
+            price:
+              type: number
+            tdp:
+              type: integer
+              description: Thermal Design Power in watts
+        storage:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type: string
+            capacity:
+              type: integer
+              description: Capacity in GB
+            price:
+              type: number
+        psu:
+          type: object
+          properties:
+            name:
+              type: string
+            wattage:
+              type: integer
+            efficiency:
+              type: string
+            price:
+              type: number
+        case:
+          type: object
+          properties:
+            name:
+              type: string
+            formFactor:
+              type: string
+            price:
+              type: number
+            hasRGB:
+              type: string
+              enum: [yes, no]
+              description: Whether the case has RGB lighting
+            aioSupport:
+              type: string
+              enum: [yes, no]
+              description: Whether the case supports AIO liquid cooling
+        totalCost:
+          type: number
+        overallConfidence:
+          type: number
+          description: Overall estimated build quality (average of per-component confidence scores)
+        inferenceMethod:
+          type: string
+        compatibility:
+          type: object
+          properties:
+            socketMatch:
+              type: boolean
+            ramTypeMatch:
+              type: boolean
+            powerAdequate:
+              type: boolean
+
+    CPUAlternative:
+      type: object
+      properties:
+        name:
+          type: string
+        brand:
+          type: string
+        price:
+          type: number
+        cores:
+          type: integer
+
+    GPUAlternative:
+      type: object
+      properties:
+        name:
+          type: string
+        brand:
+          type: string
+        price:
+          type: number
+
+    CPUComponent:
+      type: object
+      properties:
+        name:
+          type: string
+        brand:
+          type: string
+        price:
+          type: number
+        cores:
+          type: integer
+
+    MotherboardComponent:
+      type: object
+      properties:
+        name:
+          type: string
+        socket:
+          type: string
+        price:
+          type: number
+
+    GPUComponent:
+      type: object
+      properties:
+        name:
+          type: string
+        brand:
+          type: string
+        price:
+          type: number
+
+    AlternativesResponse:
+      type: object
+      properties:
+        component:
+          type: string
+        alternatives:
+          type: array
+          items:
+            $ref: '#/components/schemas/Candidate'
+
+    Candidate:
+      type: object
+      description: Generic candidate entry returned by /api/alternatives. Fields vary by component type.
+      properties:
+        name:
+          type: string
+        brand:
+          type: string
+        socket:
+          type: string
+        price:
+          type: number
+        cores:
+          type: integer
+        threads:
+          type: integer
+        tier:
+          type: string
+        baseScore:
+          type: number
+        finalScore:
+          type: number
+        confidence:
+          type: number
+        selected:
+          type: boolean
+        tdp:
+          type: integer
+        capacity:
+          type: integer
+        type:
+          type: string
+        speed:
+          type: integer
+        wattage:
+          type: integer
+        efficiency:
+          type: string
+        formFactor:
+          type: string
+
+    TraceEntry:
+      type: object
+      properties:
+        type:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: number
+
+    ConfidenceEntry:
+      type: object
+      properties:
+        component:
+          type: string
+        confidence:
+          type: number
+
+    # Add overallConfidence and inferenceMethod to build response
