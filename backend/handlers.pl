@@ -93,13 +93,7 @@ handle_explain_request(Request) :-
     ;   (
         http_read_json_dict(Request, Input),
         atom_string(Component, Input.component),
-        atom_string(ExplainType, Input.get('type', 'detailed')),
-        (   ExplainType = 'why' ->
-            generate_why_explanation(Component, Explanation)
-        ;   ExplainType = 'how' ->
-            generate_how_explanation(Component, Explanation)
-        ;   generate_detailed_explanation(Component, Explanation)
-        ),
+        generate_detailed_explanation(Component, Explanation),
         reply_json_dict(_{explanation: Explanation})
     )).
 

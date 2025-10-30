@@ -146,9 +146,3 @@ generate_detailed_explanation(case, Explanation) :-
 
 generate_detailed_explanation(Component, Explanation) :-
     format(atom(Explanation), 'No detailed explanation available for ~w', [Component]).
-
-generate_why_explanation(Component, Explanation) :-
-    generate_detailed_explanation(Component, Explanation).
-
-generate_how_explanation(Component, Explanation) :-
-    generate_detailed_explanation(Component, Explanation).

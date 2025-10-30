@@ -1,4 +1,4 @@
-% Knowledge base: components
+% Components
 
 % CPUs - cpu(Name, Brand, Socket, Price, Cores, Threads, Tier, Score)
 cpu('Intel Core i3-12100F', intel, lga1700, 110, 4, 8, budget, 75).

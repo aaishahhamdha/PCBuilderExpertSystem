@@ -64,12 +64,14 @@ recommend_cpu :-
     trace_reasoning(recommendation, cpu, CandMsg),
     
     FinalCandidates \= [],
-    % Score all candidates and sort
+    % Use resolve_conflicts to get best candidate
+    resolve_conflicts(cpu, FinalCandidates, BestCandidate),
+    
+    % Score all candidates for JSON output
     score_candidates(cpu, FinalCandidates, ScoredCandidates),
     sort(2, @>=, ScoredCandidates, SortedCandidates),
     
     retractall(recommended_candidates(cpu, _)),
-    SortedCandidates = [BestCandidate-_|_],
     findall(_{name: Name, brand: Brand, socket: Socket, price: Price, cores: Cores, threads: Threads, 
               tier: CPUTier, baseScore: BaseScore, finalScore: FinalScore, confidence: Conf, selected: Selected},
         (member([Name, Brand, Socket, Price, Cores, Threads, CPUTier, BaseScore]-FinalScore, SortedCandidates),
@@ -105,13 +107,15 @@ recommend_motherboard :-
     trace_reasoning(recommendation, motherboard, CandMsg),
     
     Candidates \= [],
-    % Score all candidates and sort
+    % Use resolve_conflicts to get best candidate
+    resolve_conflicts(motherboard, Candidates, BestCandidate),
+    
+    % Score all candidates for JSON output
     score_candidates(motherboard, Candidates, ScoredCandidates),
     sort(2, @>=, ScoredCandidates, SortedCandidates),
     
     % Store ALL scored candidates
     retractall(recommended_candidates(motherboard, _)),
-    SortedCandidates = [BestCandidate-_|_],
     findall(_{name: Name, socket: MoboSocket, chipset: Chipset, price: Price, tier: MoboTier, 
               ramType: RamType, baseScore: BaseScore, finalScore: FinalScore, confidence: Conf, selected: Selected},
         (member([Name, MoboSocket, Chipset, Price, MoboTier, RamType, BaseScore]-FinalScore, SortedCandidates),
@@ -165,13 +169,15 @@ recommend_ram :-
     trace_reasoning(recommendation, ram, CandMsg),
     
     FinalCandidates \= [],
-    % Score all candidates and sort
+    % Use resolve_conflicts to get best candidate
+    resolve_conflicts(ram, FinalCandidates, BestCandidate),
+    
+    % Score all candidates for JSON output
     score_candidates(ram, FinalCandidates, ScoredCandidates),
     sort(2, @>=, ScoredCandidates, SortedCandidates),
     
     % Store ALL scored candidates
     retractall(recommended_candidates(ram, _)),
-    SortedCandidates = [BestCandidate-_|_],
     findall(_{name: Name, capacity: Capacity, type: Type, speed: Speed, price: Price, tier: RamTier, 
               baseScore: BaseScore, hasRGB: HasRGB, finalScore: FinalScore, confidence: Conf, selected: Selected},
         (member([Name, Capacity, Type, Speed, Price, RamTier, BaseScore, HasRGB]-FinalScore, SortedCandidates),
@@ -222,13 +228,15 @@ recommend_gpu :-
     trace_reasoning(recommendation, gpu, CandMsg),
     
     FinalCandidates \= [],
-    % Score all candidates and sort
+    % Use resolve_conflicts to get best candidate
+    resolve_conflicts(gpu, FinalCandidates, BestCandidate),
+    
+    % Score all candidates for JSON output
     score_candidates(gpu, FinalCandidates, ScoredCandidates),
     sort(2, @>=, ScoredCandidates, SortedCandidates),
     
     % Store ALL scored candidates
     retractall(recommended_candidates(gpu, _)),
-    SortedCandidates = [BestCandidate-_|_],
     findall(_{name: Name, brand: Brand, price: Price, tier: GPUTier, tdp: TDP, 
               baseScore: BaseScore, finalScore: FinalScore, confidence: Conf, selected: Selected},
         (member([Name, Brand, Price, GPUTier, TDP, BaseScore]-FinalScore, SortedCandidates),
@@ -261,13 +269,15 @@ recommend_storage :-
     trace_reasoning(recommendation, storage, CandMsg),
     
     Candidates \= [],
-    % Score all candidates and sort
+    % Use resolve_conflicts to get best candidate
+    resolve_conflicts(storage, Candidates, BestCandidate),
+    
+    % Score all candidates for JSON output
     score_candidates(storage, Candidates, ScoredCandidates),
     sort(2, @>=, ScoredCandidates, SortedCandidates),
     
     % Store ALL scored candidates
     retractall(recommended_candidates(storage, _)),
-    SortedCandidates = [BestCandidate-_|_],
     findall(_{name: Name, type: Type, capacity: Capacity, price: Price, tier: StorageTier, 
               baseScore: BaseScore, finalScore: FinalScore, confidence: Conf, selected: Selected},
         (member([Name, Type, Capacity, Price, StorageTier, BaseScore]-FinalScore, SortedCandidates),
@@ -318,13 +328,15 @@ recommend_psu :-
     trace_reasoning(recommendation, psu, CandMsg),
     
     FinalCandidates \= [],
-    % Score all candidates and sort
+    % Use resolve_conflicts to get best candidate
+    resolve_conflicts(psu, FinalCandidates, BestCandidate),
+    
+    % Score all candidates for JSON output
     score_candidates(psu, FinalCandidates, ScoredCandidates),
     sort(2, @>=, ScoredCandidates, SortedCandidates),
     
     % Store ALL scored candidates
     retractall(recommended_candidates(psu, _)),
-    SortedCandidates = [BestCandidate-_|_],
     findall(_{name: Name, wattage: Wattage, efficiency: Efficiency, price: Price, tier: PSUTier, 
               baseScore: BaseScore, finalScore: FinalScore, confidence: Conf, selected: Selected},
         (member([Name, Wattage, Efficiency, Price, PSUTier, BaseScore]-FinalScore, SortedCandidates),
@@ -356,13 +368,15 @@ recommend_case :-
     trace_reasoning(recommendation, case, CandMsg),
     
     Candidates \= [],
-    % Score all candidates and sort
+    % Use resolve_conflicts to get best candidate
+    resolve_conflicts(case, Candidates, BestCandidate),
+    
+    % Score all candidates for JSON output
     score_candidates(case, Candidates, ScoredCandidates),
     sort(2, @>=, ScoredCandidates, SortedCandidates),
     
     % Store ALL scored candidates
     retractall(recommended_candidates(case, _)),
-    SortedCandidates = [BestCandidate-_|_],
     findall(_{name: Name, formFactor: FormFactor, price: Price, tier: CaseTier, 
               baseScore: BaseScore, hasRGB: HasRGB, aioSupport: AIOSupport, finalScore: FinalScore, confidence: Conf, selected: Selected},
         (member([Name, FormFactor, Price, CaseTier, BaseScore, HasRGB, AIOSupport]-FinalScore, SortedCandidates),
