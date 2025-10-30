@@ -157,5 +157,5 @@ collect_build_json(JSON) :-
         totalCost: TotalCost,
         overallConfidence: OverallConfidence,
         compatibility: _{socketMatch: true, ramTypeMatch: true, powerAdequate: true},
-        inferenceMethod: 'hybrid_forward_backward_chaining'
+        inferenceMethod: 'forward_chaining'
     }.

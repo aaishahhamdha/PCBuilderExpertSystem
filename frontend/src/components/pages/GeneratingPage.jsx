@@ -39,8 +39,8 @@ export const GeneratingPage = () => {
             <div style={{textAlign: 'left', maxWidth: '600px', margin: '0 auto'}}>
               {[
                 { text: 'Forward chaining: Inferring requirements', delay: 0 },
-                { text: 'Backward chaining: Proving compatibility', delay: 0.2 },
                 { text: 'Conflict resolution: Scoring candidates', delay: 0.4 },
+                { text: 'Scoring & ranking: Selecting best match', delay: 0.9 },
                 { text: 'Calculating quality confidence factors', delay: 0.6 }
               ].map((item, i) => (
                 <div key={i} style={{

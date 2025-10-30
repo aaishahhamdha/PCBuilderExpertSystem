@@ -2,26 +2,26 @@
 
 recommend_build :-
     trace_reasoning(main, start, 'Starting recommendation'),
-    forward_chain,
-    prove_usage_requirements,
+    infer_facts,
+    infer_usage_requirements,
     catch(
-        (user_choice(usage, gaming) -> prove_gaming_requirements ; true),
+        (user_choice(usage, gaming) -> infer_gaming_requirements ; true),
         _,
         true
     ),
-    catch(prove_rgb_requirements, _, true),
-    catch(prove_cooling_requirements, _, true),
-    recommend_cpu_robust,
-    recommend_motherboard_robust,
-    recommend_ram_robust,
-    recommend_gpu_robust,
-    recommend_storage_robust,
-    recommend_psu_robust,
-    recommend_case_robust,
+    catch(infer_rgb_requirements, _, true),
+    catch(infer_cooling_requirements, _, true),
+    recommend_cpu,
+    recommend_motherboard,
+    recommend_ram,
+    recommend_gpu,
+    recommend_storage,
+    recommend_psu,
+    recommend_case,
     trace_reasoning(main, complete, 'Build complete').
 
 % CPU
-recommend_cpu_robust :-
+recommend_cpu :-
     user_choice(budget, BudgetTier),
     user_choice(usage, Usage),
     (requirement(cores, MinCores) -> true ; MinCores = 4),
@@ -87,7 +87,7 @@ recommend_cpu_robust :-
     trace_reasoning(recommendation, cpu, SelectedMsg).
 
 % MOTHERBOARD
-recommend_motherboard_robust :-
+recommend_motherboard :-
     recommended(cpu, [CPUName, _, Socket, _, _, _]),
     user_choice(budget, BudgetTier),
     format(atom(StartMsg), 'Searching for motherboard: Socket=~w (from ~w), Budget=~w', [Socket, CPUName, BudgetTier]),
@@ -132,7 +132,7 @@ recommend_motherboard_robust :-
     trace_reasoning(recommendation, motherboard, SelectedMsg).
 
 % RAM
-recommend_ram_robust :-
+recommend_ram :-
     recommended(motherboard, [MoboName, _, _, _, RamType]),
     user_choice(budget, BudgetTier),
     user_choice(usage, Usage),
@@ -189,7 +189,7 @@ recommend_ram_robust :-
     trace_reasoning(recommendation, ram, SelectedMsg).
 
 % GPU
-recommend_gpu_robust :-
+recommend_gpu :-
     user_choice(usage, Usage),
     user_choice(budget, BudgetTier),
     format(atom(StartMsg), 'Searching for GPU: Usage=~w, Budget=~w', [Usage, BudgetTier]),
@@ -246,7 +246,7 @@ recommend_gpu_robust :-
     trace_reasoning(recommendation, gpu, SelectedMsg).
 
 % STORAGE
-recommend_storage_robust :-
+recommend_storage :-
     user_choice(budget, BudgetTier),
     user_choice(usage, Usage),
     format(atom(StartMsg), 'Searching for storage: Usage=~w, Budget=~w, Type=NVMe', [Usage, BudgetTier]),
@@ -285,7 +285,7 @@ recommend_storage_robust :-
     trace_reasoning(recommendation, storage, SelectedMsg).
 
 % PSU
-recommend_psu_robust :-
+recommend_psu :-
     recommended(gpu, [GPUName, _, _, TDP]),
     recommended(cpu, [CPUName, _, _, _, Cores, _]),
     system_power_requirement(TDP, Cores, RequiredWattage),
@@ -343,7 +343,7 @@ recommend_psu_robust :-
     trace_reasoning(recommendation, psu, SelectedMsg).
 
 % CASE
-recommend_case_robust :-
+recommend_case :-
     user_choice(budget, BudgetTier),
     format(atom(StartMsg), 'Searching for case: Budget=~w', [BudgetTier]),
     trace_reasoning(recommendation, case, StartMsg),

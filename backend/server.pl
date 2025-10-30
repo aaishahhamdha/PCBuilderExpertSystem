@@ -12,9 +12,8 @@
 
 % Include separated files (keeps original predicates but split by purpose)
 :- include('state.pl').
-:- include('kb.pl').
-:- include('tiers.pl').
-:- include('rules.pl').
+:- include('components.pl').
+:- include('match.pl').
 :- include('confidence.pl').
 :- include('trace.pl').
 :- include('chaining.pl').

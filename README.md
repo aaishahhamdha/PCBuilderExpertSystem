@@ -1,6 +1,6 @@
 # PC Builder Expert System
 
-An AI-powered PC building consultation system. It uses a Prolog-based expert system (hybrid forward/backward chaining) for reasoning and a React + Vite frontend for the UI.
+An AI-powered PC building consultation system. It uses a Prolog-based expert system for reasoning and a React + Vite frontend for the UI.
 
 ## Overview
 
@@ -100,9 +100,9 @@ The repository now contains a clear separation between the Prolog backend and th
 pc-builder-expert-system/
 ├── backend/                     # SWI-Prolog expert system
 │   ├── server.pl                # HTTP server and main entry
-│   ├── kb.pl                    # Knowledge base (components, facts)
-│   ├── rules.pl                 # Inference rules
-│   ├── chaining.pl              # Forward/backward chaining orchestration
+│   ├── components.pl            # components, facts
+│   ├── match.pl                 # Inference rules for compatibility and usage
+│   ├── chaining.pl              # Forward chaining orchestration
 │   ├── scoring.pl               # Component scoring logic
 │   ├── recommend.pl             # Build recommendation driver
 │   ├── confidence.pl            # Confidence calculation helpers
